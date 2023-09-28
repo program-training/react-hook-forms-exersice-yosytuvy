@@ -1,67 +1,104 @@
-import  { useState, ChangeEvent, FormEvent } from 'react';
+import { useForm } from "react-hook-form";
+import { ErrorMessage } from "@hookform/error-message";
+import { emailRegex, passwordRegex } from "../utils/regexEx";
 
-interface FormData {
-  username: string;
-  email: string;
-  password:string;
+interface UserInterface {
+    username: string;
+    password: string;
+    email: string;
 }
 
-function RegularForm() {
-  const [formData, setFormData] = useState<FormData>({
-    username: '',
-    email: '',
-    password: '',
-  });
+const RegularForm = () => {
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isValid },
+    } = useForm<UserInterface>({ mode: "onChange", criteriaMode: "all" });
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    alert(JSON.stringify(formData));
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-        <h1>Change Me To React Hook Form</h1>
-      <div>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          placeholder='Enter UserName'
-          value={formData.username}
-          onChange={handleChange}
-        />
-      </div>
-      <div>
-        <input
-          type="text"
-          id="email"
-          name="email"
-          placeholder='Enter Email'
-          value={formData.email}
-          onChange={handleChange}
-        />
-      </div>
-      <div>
-        <input
-          type="text"
-          id="password"
-          name="password"
-          placeholder='Enter Password'
-          value={formData.password}
-          onChange={handleChange}
-        />
-      </div>
-      <button type="submit">Submit</button>
-    </form>
-  );
-}
+    return (
+        <form
+            onSubmit={handleSubmit((data, e) => {
+                e?.preventDefault();
+                console.log(data);
+            })}>
+            <h1>You Changed Me To React Hook Form</h1>
+            <div>
+                <label htmlFor="username">Username:</label>
+                <input
+                    {...register("username", {
+                        required: "This is required",
+                        minLength: {
+                            value: 2,
+                            message: "Min lenght is 2",
+                        },
+                    })}
+                    type="text"
+                    placeholder="Username"
+                />
+                <ErrorMessage
+                    errors={errors}
+                    name="username"
+                    render={({ messages }) =>
+                        messages &&
+                        Object.entries(messages).map(([type, message]) => (
+                            <p key={type}>⚠ {message}</p>
+                        ))
+                    }
+                />
+            </div>
+            <div>
+                <label htmlFor="password">Password:</label>
+                <input
+                    {...register("password", {
+                        required: "This is required",
+                        pattern: {
+                            value: passwordRegex,
+                            message:
+                                "Password must contain at least one uppercase, one lowercase, number, special character, and least 8 characters, no more thatn 20",
+                        },
+                    })}
+                    type="text"
+                    placeholder="Password"
+                />
+                <ErrorMessage
+                    errors={errors}
+                    name="password"
+                    render={({ messages }) =>
+                        messages &&
+                        Object.entries(messages).map(([type, message]) => (
+                            <p key={type}>⚠ {message}</p>
+                        ))
+                    }
+                />
+            </div>
+            <div>
+                <label htmlFor="email">Email:</label>
+                <input
+                    {...register("email", {
+                        required: "This is required",
+                        pattern: {
+                            value: emailRegex,
+                            message: "Email not valid",
+                        },
+                    })}
+                    type="text"
+                    placeholder="Email"
+                />
+                <ErrorMessage
+                    errors={errors}
+                    name="email"
+                    render={({ messages }) =>
+                        messages &&
+                        Object.entries(messages).map(([type, message]) => (
+                            <p key={type}>⚠ {message}</p>
+                        ))
+                    }
+                />
+            </div>
+            {isValid && <button type="submit">Submit</button>}
+        </form>
+    );
+};
 
 export default RegularForm;
